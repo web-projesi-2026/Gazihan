@@ -103,8 +103,9 @@ footer p{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text
 <a href="index.html" class="active">Ana Sayfa</a>
 <a href="pages/project.html">Projeler</a>
 <a href="pages/rust.html">Rust</a>
-<a href="pages/scenario.html">Senaryo</a>
+
 <a href="pages/about.html">Hakkımda</a>
+<a href="pages/books.html">Kitaplık</a>
 <a href="pages/contact.html">İletişim</a>
 </div>
 </nav>
@@ -201,12 +202,11 @@ const shield=new THREE.Mesh(new THREE.IcosahedronGeometry(2.6,1),mS);K.add(shiel
 K.add(new THREE.Mesh(new THREE.IcosahedronGeometry(2.62,1),new THREE.MeshBasicMaterial({color:0x00ffc8,wireframe:true,transparent:true,opacity:.05})));
 K.add(new THREE.Mesh(new THREE.SphereGeometry(2.8,32,32),new THREE.MeshBasicMaterial({color:0x00ffc8,transparent:true,opacity:.012,side:THREE.BackSide})));
 
-/* ═══════ MORPHING PARTICLES ═══════ */
+/* ═══════ AMBIENT PARTICLES ═══════ */
 const pC=900;
 const pG=new THREE.BufferGeometry();
 const pPos=new Float32Array(pC*3);
-const pTgt=new Float32Array(pC*3); // target positions (text)
-const pOrg=new Float32Array(pC*3); // scattered positions
+const pOrg=new Float32Array(pC*3); // base positions
 
 // Generate scattered sphere positions
 for(let i=0;i<pC;i++){
@@ -217,34 +217,11 @@ for(let i=0;i<pC;i++){
     pPos[i*3]=pOrg[i*3];pPos[i*3+1]=pOrg[i*3+1];pPos[i*3+2]=pOrg[i*3+2];
 }
 
-// Generate text positions from canvas
-(function(){
-    const tc=document.createElement('canvas');tc.width=800;tc.height=200;
-    const tx=tc.getContext('2d');
-    tx.fillStyle='#fff';
-    tx.font='bold 140px Arial,Helvetica,sans-serif';
-    tx.textAlign='center';tx.textBaseline='middle';
-    tx.fillText('SIPAHI',400,100);
-    const d=tx.getImageData(0,0,800,200).data;
-    const pts=[];
-    // Pixel-level scan for dense coverage
-    for(let y=0;y<200;y+=1)for(let x=0;x<800;x+=1){
-        if(d[(y*800+x)*4+3]>128)pts.push({x:(x-400)/100,y:(100-y)/100,z:0});
-    }
-    // Shuffle for random distribution
-    for(let i=pts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pts[i],pts[j]]=[pts[j],pts[i]]}
-    for(let i=0;i<pC;i++){
-        const p=pts[i%pts.length];
-        pTgt[i*3]=p.x-1.5;pTgt[i*3+1]=p.y+3.0;pTgt[i*3+2]=(Math.random()-.5)*.1;
-    }
-})();
-
 pG.setAttribute('position',new THREE.BufferAttribute(pPos,3));
 const pSizes=new Float32Array(pC);for(let i=0;i<pC;i++)pSizes[i]=Math.random()*.4+.3;
 pG.setAttribute('size',new THREE.BufferAttribute(pSizes,1));
 const particles=new THREE.Points(pG,new THREE.PointsMaterial({color:0x00ffc8,size:.035,transparent:true,opacity:.6,sizeAttenuation:true}));
 S.add(particles);
-let morphPhase=0; // 0=scattered, 1=text
 
 K.position.set(1.2,0,0);S.add(K);
 
@@ -269,20 +246,15 @@ r2.rotation.x=1.2+Math.sin(t*.3)*.1;
 shield.scale.setScalar(1+Math.sin(t*.5)*.02);
 mC.emissiveIntensity=.3+Math.sin(t*2)*.15;
 pL.position.x=Math.sin(t*.5)*2;pL.position.z=3+Math.cos(t*.3);pL.intensity=.8+Math.sin(t*1.5)*.2;
-// Particle morph: 5s text visible, 12s scattered
-const cycle=Math.max(0,t-8)%25;
-morphPhase=cycle<2.5?Math.min(1,cycle/2.5):cycle<7.5?1:cycle<10?Math.max(0,1-(cycle-7.5)/2.5):0;
+// Ambient floating particles
 const posArr=pG.attributes.position.array;
 for(let i=0;i<pC;i++){
     const i3=i*3;
-    const tx=pTgt[i3],ty=pTgt[i3+1],tz=pTgt[i3+2];
-    const ox=pOrg[i3],oy=pOrg[i3+1],oz=pOrg[i3+2];
-    posArr[i3]=ox+(tx-ox)*morphPhase+Math.sin(t*1.5+i*.1)*.03;
-    posArr[i3+1]=oy+(ty-oy)*morphPhase+Math.cos(t*1.2+i*.15)*.03;
-    posArr[i3+2]=oz+(tz-oz)*morphPhase+Math.sin(t*.8+i*.2)*.02;
+    posArr[i3]=pOrg[i3]+Math.sin(t*.5+i*.1)*.15;
+    posArr[i3+1]=pOrg[i3+1]+Math.cos(t*.4+i*.15)*.15;
+    posArr[i3+2]=pOrg[i3+2]+Math.sin(t*.3+i*.2)*.1;
 }
 pG.attributes.position.needsUpdate=true;
-particles.material.opacity=.3+morphPhase*.35;
 R.render(S,cam);}
 anim();
 })();
