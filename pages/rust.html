@@ -23,6 +23,7 @@ nav{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;justify
 .nav-links{display:flex;gap:24px}
 .nav-links a{color:var(--dim);text-decoration:none;font-size:.8rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:color .3s}
 .nav-links a:hover,.nav-links a.active{color:var(--rust)}
+.menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer}
 
 /* HERO */
 .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 60px;position:relative;overflow:hidden}
@@ -123,8 +124,9 @@ footer p{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--dim
     .ferris-says{flex-direction:column;text-align:center}
     .users-grid{grid-template-columns:1fr}
     nav{padding:14px 16px}
-    .nav-links{gap:14px}
+    .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);flex-direction:column;padding:20px 24px;gap:16px}.nav-links.open{display:flex}
     .nav-links a{font-size:.6rem}
+    .menu-toggle{display:block}
 }
 </style>
 </head>
@@ -132,6 +134,7 @@ footer p{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--dim
 
 <nav>
     <a href="../index.html" class="logo">gzhno<span>_sec</span></a>
+    <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
     <div class="nav-links">
         <a href="../index.html">Ana Sayfa</a>
         <a href="project.html">Projeler</a>
