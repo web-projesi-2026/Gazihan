@@ -69,6 +69,11 @@ section{padding:70px 0}
 .book-progress-fill.phys{background:linear-gradient(90deg,var(--blue),#93c5fd)}
 
 .book-status{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--text-dim);margin-top:6px;display:flex;justify-content:space-between}
+.fav-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .3s;z-index:5;color:var(--text-dim);backdrop-filter:blur(8px)}
+.fav-btn:hover{transform:scale(1.15);border-color:var(--accent)}
+.fav-btn.active{color:#ff6b6b;border-color:#ff6b6b;text-shadow:0 0 8px rgba(255,107,107,.5)}
+.filter-btn.fav-filter{border-color:rgba(255,107,107,.3);color:#ff6b6b}
+.filter-btn.fav-filter.active{background:#ff6b6b;color:#000;border-color:#ff6b6b}
 
 /* PHYSICAL BOOKS */
 .physical-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
@@ -165,6 +170,7 @@ footer p{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text
         <button class="filter-btn" onclick="filterBooks('system')">System / LitRPG (7)</button>
         <button class="filter-btn" onclick="filterBooks('fantasy')">Fantasy / Sci-Fi (10)</button>
         <button class="filter-btn" onclick="filterBooks('dark')">Dark / Anti-Hero (9)</button>
+        <button class="filter-btn fav-filter" onclick="filterBooks('fav')">★ Favoriler (<span id="favCount">0</span>)</button>
     </div>
 
     <div class="books-grid" id="booksGrid">
@@ -1111,45 +1117,47 @@ new IntersectionObserver(entries => {
 </script>
 
 <script>
-const novels=[
-{t:'The Mech Touch',ch:4269,cat:'fantasy',fav:true,img:'covers/mech-touch.webp'},
-{t:'Klavye Ölümsüzü',ch:2847,cat:'system',fav:true,img:'covers/keyboard-immortal.webp'},
-{t:'Supreme Harem God System',ch:1960,cat:'system',fav:false,img:'covers/supreme-harem-god-system.webp'},
-{t:'Bir İnsan Hükümdarın Günceleri',ch:1831,cat:'cultivation',fav:true},
-{t:'Vampir Sistemim',ch:1749,cat:'system',fav:true,img:'covers/my-vampire-system.webp'},
-{t:'Dokuz Yıldız Hegemon Vücut Sanatı',ch:1672,cat:'cultivation',fav:true,img:'covers/nine-star-hegemon.webp'},
-{t:'Tılsım İmparatoru',ch:1465,cat:'cultivation',fav:false,img:'covers/talisman-emperor.webp'},
-{t:'Göklerde Yükselen Savaş Hükümdarı',ch:1422,cat:'cultivation',fav:false,img:'covers/war-sovereign.jpg'},
-{t:'Gölge Köle',ch:1319,cat:'dark',fav:true,img:'covers/shadow-slave.jpg'},
-{t:'Kılıcın İlk Ölümsüzü',ch:1312,cat:'fantasy',fav:false,img:'covers/first-immortal-sword.webp'},
-{t:'Boyutsal İniş',ch:1259,cat:'fantasy',fav:false},
-{t:'Birth of the Demonic Sword',ch:1164,cat:'dark',fav:false,img:'covers/birth-demonic-sword.jpg'},
-{t:'Cadı Avcısı',ch:1146,cat:'dark',fav:false,img:'covers/witch-hunter-system.webp'},
-{t:'Dual Cultivation',ch:1142,cat:'cultivation',fav:false},
-{t:'My Three Wives Are Beautiful Vampires',ch:237,cat:'dark',fav:true,img:'covers/my-three-wives.webp'},
-{t:'Re:Online Evrim',ch:1040,cat:'system',fav:false},
-{t:'Blood Warlock: Succubus Partner',ch:1020,cat:'dark',fav:false,img:'covers/blood-warlock.jpg'},
-{t:'Yüce İblis Hükümdarı',ch:1011,cat:'dark',fav:false},
-{t:'Lanet Olası Şeytan',ch:927,cat:'dark',fav:true},
-{t:'Kralım Çok Yaşa',ch:807,cat:'fantasy',fav:false,img:'covers/kralim-cok-yasa.jpg'},
-{t:'Saf Kanın İlahi Tahtı',ch:790,cat:'cultivation',fav:false},
-{t:'Krizalit',ch:728,cat:'fantasy',fav:false,img:'covers/chrysalis.jpg'},
-{t:'City of Sin',ch:700,cat:'fantasy',fav:false,img:'covers/city-of-sin.webp'},
-{t:'Emperor\'s Domination',ch:600,cat:'cultivation',fav:false,img:'covers/emperors-domination.webp'},
-{t:'Üstünlük Oyunları',ch:523,cat:'system',fav:false,img:'covers/supremacy-games.webp'},
-{t:'Allure of the Night',ch:499,cat:'dark',fav:false},
-{t:'Supreme Magus',ch:495,cat:'fantasy',fav:false,img:'covers/supreme-magus.webp'},
-{t:'The Author\'s POV',ch:470,cat:'system',fav:false,img:'covers/the-authors-pov.webp'},
-{t:'Reverend Insanity',ch:445,cat:'dark',fav:true,img:'covers/reverend-insanity.webp'},
-{t:'Kan Hattı Sistemi',ch:443,cat:'system',fav:false,img:'covers/the-bloodline-system.webp'},
-{t:'Astral Pet Mağazası',ch:406,cat:'fantasy',fav:false,img:'covers/astral-pet-store.webp'},
-{t:'Cultivation Online',ch:300,cat:'cultivation',fav:false,img:'covers/cultivation-online.jpg'},
-{t:'Dual Cultivation: God Returns',ch:162,cat:'cultivation',fav:false},
-{t:'Dual Cultivator Reborn',ch:927,cat:'cultivation',fav:false},
-{t:'Against the Gods',ch:1452,cat:'cultivation',fav:false,img:'covers/against-the-gods.webp'},
-{t:'The Primal Hunter',ch:248,cat:'system',fav:false,img:'covers/the-primal-hunter.webp'},
-{t:'Re:Zero — Kısım 7',ch:110,cat:'fantasy',fav:false},
-];
+let novels=[];
+
+/* ═══════ FAVORİLER — localStorage ═══════ */
+function getFavorites(){
+    try{ return JSON.parse(localStorage.getItem('bookFavorites'))||[]; }
+    catch(e){ return []; }
+}
+function saveFavorites(favs){
+    localStorage.setItem('bookFavorites',JSON.stringify(favs));
+}
+function isFavorite(title){
+    return getFavorites().includes(title);
+}
+function toggleFavorite(title){
+    let favs=getFavorites();
+    if(favs.includes(title)) favs=favs.filter(f=>f!==title);
+    else favs.push(title);
+    saveFavorites(favs);
+    updateFavCount();
+    renderBooks(currentFilter);
+}
+function updateFavCount(){
+    const el=document.getElementById('favCount');
+    if(el) el.textContent=getFavorites().length;
+}
+let currentFilter='all';
+
+/* ═══════ JSON'DAN VERİ YÜKLEME — fetch() ═══════ */
+async function loadBooks(){
+    try{
+        const response=await fetch('../data/books.json');
+        if(!response.ok) throw new Error('JSON yüklenemedi');
+        novels=await response.json();
+    }catch(e){
+        console.warn('JSON fetch hatası, fallback veriler kullanılıyor:',e);
+        novels=[{t:'Veri yüklenemedi',ch:0,cat:'system'}];
+    }
+    updateFavCount();
+    renderBooks('all');
+    renderPhysical();
+}
 
 const physBooks=[
 {t:'The Witcher Serisi',a:'Andrzej Sapkowski',s:'Tamamı okundu',n:'~8 kitap'},
@@ -1165,20 +1173,26 @@ const maxCh=4269; // Mech Touch
 
 /* ═══════ RENDER ═══════ */
 function renderBooks(filter){
+    currentFilter=filter;
     const grid=document.getElementById('booksGrid');
-    const filtered=filter==='all'?novels:novels.filter(b=>b.cat===filter);
+    let filtered;
+    if(filter==='fav') filtered=novels.filter(b=>isFavorite(b.t));
+    else if(filter==='all') filtered=novels;
+    else filtered=novels.filter(b=>b.cat===filter);
     grid.innerHTML=filtered.map(b=>{
         const pct=Math.round((b.ch/maxCh)*100);
         const catClass=b.cat==='cultivation'?'cult':b.cat==='fantasy'?'fan':b.cat==='system'?'sys':'dark';
         const catLabel=b.cat==='cultivation'?'Cultivation':b.cat==='fantasy'?'Fantasy':b.cat==='system'?'System':'Dark';
         const catBadge=b.cat==='cultivation'?'cat-cultivation':b.cat==='fantasy'?'cat-fantasy':b.cat==='system'?'cat-system':'cat-dark';
+        const fav=isFavorite(b.t);
         const coverHtml=b.img
             ?`<div class="book-cover" style="background-image:url('${b.img}')"></div>`
             :`<div class="book-cover-placeholder">${b.t.charAt(0)}</div>`;
         return `<div class="book-card" data-cat="${b.cat}">
+            <button class="fav-btn ${fav?'active':''}" onclick="event.stopPropagation();toggleFavorite('${b.t.replace(/'/g,"\\'")}');" title="${fav?'Favorilerden çıkar':'Favorilere ekle'}">${fav?'♥':'♡'}</button>
             ${coverHtml}
             <div class="book-info">
-                <span class="book-cat ${catBadge}">${catLabel}${b.fav?' ★':''}</span>
+                <span class="book-cat ${catBadge}">${catLabel}${fav?' ★':''}</span>
                 <div class="book-header">
                     <div class="book-title">${b.t}</div>
                     <div class="book-chapters">${b.ch.toLocaleString('tr-TR')}</div>
@@ -1222,25 +1236,24 @@ function animateCounter(el,target,suffix=''){
 }
 
 /* ═══════ INIT ═══════ */
-renderBooks('all');
-renderPhysical();
+loadBooks().then(()=>{
+    const totalCh=novels.reduce((s,b)=>s+b.ch,0);
+    const favCount=getFavorites().length;
 
-const totalCh=novels.reduce((s,b)=>s+b.ch,0);
-const favCount=novels.filter(b=>b.fav).length;
-
-const cObs=new IntersectionObserver(e=>{
-    e.forEach(entry=>{
-        if(entry.isIntersecting){
-            animateCounter(document.getElementById('sWords'),73,'M+');
-            animateCounter(document.getElementById('sChapters'),totalCh,'+');
-            animateCounter(document.getElementById('sNovels'),novels.length);
-            animateCounter(document.getElementById('sBooks'),24);
-            animateCounter(document.getElementById('sFav'),favCount);
-            cObs.unobserve(entry.target);
-        }
-    });
-},{threshold:.3});
-cObs.observe(document.querySelector('.stats-bar'));
+    const cObs=new IntersectionObserver(e=>{
+        e.forEach(entry=>{
+            if(entry.isIntersecting){
+                animateCounter(document.getElementById('sWords'),73,'M+');
+                animateCounter(document.getElementById('sChapters'),totalCh,'+');
+                animateCounter(document.getElementById('sNovels'),novels.length);
+                animateCounter(document.getElementById('sBooks'),24);
+                animateCounter(document.getElementById('sFav'),favCount);
+                cObs.unobserve(entry.target);
+            }
+        });
+    },{threshold:.3});
+    cObs.observe(document.querySelector('.stats-bar'));
+});
 
 /* ═══════ SCROLL REVEAL ═══════ */
 const obs=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.05});
